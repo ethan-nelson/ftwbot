@@ -4,6 +4,9 @@ import twitter
 import os
 
 
+my_user_id = '<@110629657417633792>'
+
+
 def fetch_latest_tweet(the_client, the_message):
     api = twitter.Api(consumer_key=os.environ['twitter_consumer_key'],
                       consumer_secret=os.environ['twitter_consumer_secret'],
@@ -29,13 +32,30 @@ def on_message(message):
         try:
             fetch_latest_tweet(client, message)
         except:
-            client.send_message(message.channel, "Sorry, I'm not able to get a tweet right now.")
-    elif message.content.startswith('<@110629657417633792>'):
-        client.send_message(message.channel, 
+            client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
+    elif message.content.startswith('!logs'):
+        try:
+            fetch_latest_logs(client, message)
+        except:
+            client.send.message(message.channel, 'Sorry, I am unable to get logs right now.')
+    elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
+        if 'help' in message.content:
+            client.send_message(message.channel, 
 """Hi there and welcome to forthewynnbot. It was constructed by Emann.
 The following commands are available for use:
 
     !twitter: retrieves the latest FTWAegwynn tweet from Twitter
-    !joke: tells a very funny joke""")
+    !joke: tells a very funny joke
+
+Commands you can direct at me:
+
+    @forthewynnbot help: displays this message
+    @forthewynnbot stop: turns me off for 5 minutes
+""")
+        elif 'stop' in message.content:
+            client.send_message(message.channel, 'Shutting down for 5 minutes.')
+            time.sleep(300.0)
+        else:
+            client.send_message(message.channel, 'Sorry, I do not understand that command.')
 
 client.run()
