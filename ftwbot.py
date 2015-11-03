@@ -43,10 +43,17 @@ def fetch_latest_logs(the_client, the_message):
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
-        if last_joke_time - datetime.datetime.now() > datetime.timedelta(minutes=1):
-            client.send_message(message.channel, 'What side of a turkey has the most feathers?')
-            time.sleep(0.5)
-            client.send_message(message.channel, 'The outside!!! LMAO')
+#        if last_joke_time - datetime.datetime.now() > datetime.timedelta(minutes=1):
+        client.send_message(message.channel, 'What side of a turkey has the most feathers?')
+        time.sleep(0.5)
+        client.send_message(message.channel, 'The outside!!! LMAO')
+#            last_joke_time = datetime.datetime.now()
+
+    elif message.content.startswith('!fail'):
+        client.send_message(message.channel, 'You are fail, {}.'.format(message.author.mention()))
+
+    elif message.content.startswith('!poker'):
+        client.send_message(message.channel, 'Poker is coming soon.')
 
     elif message.content.startswith('!twitter'):
         try:
@@ -66,10 +73,12 @@ def on_message(message):
 """Hi there and welcome to forthewynnbot. It was constructed by Emann.
 The following commands are available for use:
 
-    !twitter: retrieves the latest FTWAegwynn tweet from Twitter
+    !fail: tells you how awesome you are
     !joke: tells a very funny joke
     !logs: posts the latest Warcraft Logs in #logs-raid if you are an Officer
-
+    !poker: initiates a poker game (not implemented yet)
+    !twitter: retrieves the latest FTWAegwynn tweet from Twitter
+ 
 Commands you can direct at me:
 
     @forthewynnbot help: displays this message
@@ -80,5 +89,6 @@ Commands you can direct at me:
             time.sleep(300.0)
         else:
             client.send_message(message.channel, 'Sorry, I do not understand that command.')
+
 
 client.run()
