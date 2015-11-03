@@ -54,7 +54,7 @@ def on_message(message):
         except:
             client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
 
-    elif message.content.startswith('!logs') and message.author.roles[0] == 'Officer':
+    elif message.content.startswith('!logs') and message.author.roles[0].name == 'Officer':
         try:
             fetch_latest_logs(client, message)
         except:
