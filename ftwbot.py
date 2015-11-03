@@ -7,8 +7,8 @@ import os
 def fetch_latest_tweet(the_client, the_message):
     api = twitter.Api(consumer_key=os.environ['twitter_consumer_key'],
                       consumer_secret=os.environ['twitter_consumer_secret'],
-                      access_token_key=['twitter_access_token_key'],
-                      access_token_secret=['twitter_access_token_secret'])
+                      access_token_key=os.environ['twitter_access_token_key'],
+                      access_token_secret=os.environ['twitter_access_token_secret'])
     tweet = api.GetUserTimeline(screen_name='ftwaegwynn',count=1)[0]
     the_client.send_message(the_message.channel,
 """The most recent FTWAegwynn tweet is: %s
@@ -26,7 +26,10 @@ def on_message(message):
         time.sleep(0.5)
         client.send_message(message.channel, 'The outside!!! LMAO')
     elif message.content.startswith('!twitter'):
-        fetch_latest_tweet(client, message)
+        try:
+            fetch_latest_tweet(client, message)
+        except:
+            client.send_message(message.channel, "Sorry, I'm not able to get a tweet right now.")
     elif message.content.startswith('<@110629657417633792>'):
         client.send_message(message.channel, 
 """Hi there and welcome to forthewynnbot. It was constructed by Emann.
