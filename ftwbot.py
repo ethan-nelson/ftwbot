@@ -2,9 +2,12 @@ import discord
 import time
 import twitter
 import os
+from lxml import html
+import requests
 
 
 my_user_id = '<@110629657417633792>'
+log_channel_id = '91029061601615872'
 
 
 def fetch_latest_tweet(the_client, the_message):
@@ -22,6 +25,19 @@ Read it at http://twitter.com/ftwaegwynn/status/%s.""" % (tweet.text, tweet.id))
 client = discord.Client()
 client.login(os.environ['discord_user'],os.environ['discord_password'])
 
+
+def fetch_latest_logs(the_client, the_message):
+    page = requests.get('http://www.warcraftlogs.com/guilds/recent_reports/79198/')
+    tree = html.fromstring(page.text)
+    wol = tree.xpath('/html/body/div/table/tbody/tr[1]/td[1]/a')[0]
+
+    the_client.send_message(log_channel_id,
+"""Here are the WCL for tonight's %s
+%s""" % (wol.text, wol.attrib['href']))
+
+    the_client.send_message(the_message.channel, 'Logs are posted in #logs-raid.')
+
+
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
@@ -33,7 +49,7 @@ def on_message(message):
             fetch_latest_tweet(client, message)
         except:
             client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
-    elif message.content.startswith('!logs'):
+    elif message.content.startswith('!logs') and message.author.roles[0] == 'Officer':
         try:
             fetch_latest_logs(client, message)
         except:
