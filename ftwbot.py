@@ -4,10 +4,12 @@ import twitter
 import os
 from lxml import html
 import requests
+import datetime
 
 
 my_user_id = '<@110629657417633792>'
 log_channel_id = '91029061601615872'
+last_joke_time = datetime.datetime.now()
 
 
 def fetch_latest_tweet(the_client, the_message):
@@ -35,25 +37,29 @@ def fetch_latest_logs(the_client, the_message):
 """Here are the WCL for tonight's %s
 %s""" % (wol.text, wol.attrib['href']))
 
-    the_client.send_message(the_message.channel, 'Logs are posted in #logs-raid.')
+    the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
 
 
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
-        client.send_message(message.channel, 'What side of a turkey has the most feathers?')
-        time.sleep(0.5)
-        client.send_message(message.channel, 'The outside!!! LMAO')
+        if last_joke_time - datetime.datetime.now() > datetime.timedelta(minutes=1):
+            client.send_message(message.channel, 'What side of a turkey has the most feathers?')
+            time.sleep(0.5)
+            client.send_message(message.channel, 'The outside!!! LMAO')
+
     elif message.content.startswith('!twitter'):
         try:
             fetch_latest_tweet(client, message)
         except:
             client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
+
     elif message.content.startswith('!logs') and message.author.roles[0] == 'Officer':
         try:
             fetch_latest_logs(client, message)
         except:
             client.send.message(message.channel, 'Sorry, I am unable to get logs right now.')
+
     elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
         if 'help' in message.content:
             client.send_message(message.channel, 
@@ -62,6 +68,7 @@ The following commands are available for use:
 
     !twitter: retrieves the latest FTWAegwynn tweet from Twitter
     !joke: tells a very funny joke
+    !logs: posts the latest Warcraft Logs in #logs-raid if you are an Officer
 
 Commands you can direct at me:
 
