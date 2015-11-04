@@ -73,7 +73,7 @@ def on_message(message):
 
     elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
         if 'help' in message.content:
-            client.send_message(message.channel, 
+            client.send_message(message.author, 
 """Hi there and welcome to forthewynnbot. It was constructed by Emann.
 The following commands are available for use:
 
