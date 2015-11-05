@@ -5,6 +5,8 @@ import os
 from lxml import html
 import requests
 import datetime
+import poker
+
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -41,6 +43,25 @@ def fetch_latest_logs(the_client, the_message):
     the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
 
 
+def start_poker(the_client, the_message):
+    end_time = datetime.datetime.now() + datetime.timedelta(seconds=15)
+
+    participants = []
+    participants.append(the_message.author.name)
+
+    the_client.send_message(the_message.channel, 'Poker started by {}. If you would like to join, type !poker within 15 seconds.'.format(the_message.author.mention()))
+
+    while datetime.datetime.now() < end_time:
+        @the_client.event
+        def on_another_message(another_message):
+            if another_message.content.startswith('!poker') and another_message.author.name not in participants:
+                participants.append(another_message.author.name)
+
+    rolls = poker.poker(participants)
+
+    return rolls
+
+
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
@@ -48,7 +69,7 @@ def on_message(message):
             client.send_message(message.channel, 'What side of a turkey has the most feathers?')
             time.sleep(0.5)
             client.send_message(message.channel, 'The outside!!! LMAO')
-            os.environ['last_joke_time'] = datetime.datetime.now()
+            os.environ['last_joke_time'] = datetime.datetime.now().strftime(date_format)
 
     elif message.content.startswith('!hello'):
         client.send_message(message.channel, 'Hello to you, {}.'.format(message.author.mention()))
@@ -57,7 +78,8 @@ def on_message(message):
         client.send_message(message.channel, 'You are fail, {}.'.format(message.author.mention()))
 
     elif message.content.startswith('!poker'):
-        client.send_message(message.channel, 'Poker is coming soon.')
+        the_rolls = start_poker(client, message)
+        client.send_message(message.channel, the_rolls)
 
     elif message.content.startswith('!twitter'):
         try:
