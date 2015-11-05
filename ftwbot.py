@@ -10,11 +10,14 @@ import copy
 import threading
 
 
-date_format = '%Y-%m-%d %H:%M:%S'
+participants = []
+in_progress = 0
 
 my_user_id = '<@110629657417633792>'
 log_channel_id = '91029061601615872'
-os.environ['last_joke_time'] = datetime.datetime.now().strftime(date_format)
+poker_channel_id = '111655731958161408'
+
+last_joke_time = datetime.datetime.now()
 
 
 def fetch_latest_tweet(the_client, the_message):
@@ -45,29 +48,33 @@ def fetch_latest_logs(the_client, the_message):
     the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
 
 
-participants = []
-in_progress = 0
-
-
 def execute_poker(the_client, the_message):
     global participants, in_progress
     rolls = poker.poker(participants)
 
-    the_client.send_message(the_message.channel, rolls)
+    announcement = ''
+
+    for player in rolls:
+        announcement += player + ': ' + str.join(' ',rolls[player]) + '\n'
+
+#    the_client.send_message(the_message.channel, 'Join us in #poker to see the results.')
+    the_client.send_message(the_message.channel, announcement)
 
     in_progress = 0
     participants = []
 
     return rolls
 
+
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
-        if datetime.datetime.strptime(os.environ['last_joke_time'],date_format) - datetime.datetime.now() > datetime.timedelta(minutes=1):
+        global last_joke_time
+        if last_joke_time - datetime.datetime.now() > datetime.timedelta(minutes=1):
             client.send_message(message.channel, 'What side of a turkey has the most feathers?')
             time.sleep(0.5)
             client.send_message(message.channel, 'The outside!!! LMAO')
-            os.environ['last_joke_time'] = datetime.datetime.now().strftime(date_format)
+            last_joke_time = datetime.datetime.now()
 
     elif message.content.startswith('!hello'):
         client.send_message(message.channel, 'Hello to you, {}.'.format(message.author.mention()))

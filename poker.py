@@ -31,7 +31,7 @@ def poker(players):
             cards[player] = []
 
             for roll in rolls[player]:
-                cards[player].append([numbers[roll % 13] + suits[roll // 13]])
+                cards[player].append(numbers[roll % 13] + suits[roll // 13])
 
         return cards
 
