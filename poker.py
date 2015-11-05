@@ -16,7 +16,7 @@ def poker(players):
             rolls[player] = []
 
             while True:
-                temp_roll = random.randint(1,52)
+                temp_roll = random.randint(0,51)
                 if temp_roll not in rolls[player]:
                     rolls[player].append(temp_roll)
                     if len(rolls[player]) == 5:
@@ -26,7 +26,7 @@ def poker(players):
 
     def convert(rolls):
         cards = {}
-
+        print rolls
         for player in rolls:
             cards[player] = []
 
