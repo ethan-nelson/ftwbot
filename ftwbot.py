@@ -6,6 +6,8 @@ from lxml import html
 import requests
 import datetime
 import poker
+import copy
+import threading
 
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -43,24 +45,20 @@ def fetch_latest_logs(the_client, the_message):
     the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
 
 
-def start_poker(the_client, the_message):
-    end_time = datetime.datetime.now() + datetime.timedelta(seconds=15)
+participants = []
+in_progress = 0
 
-    participants = []
-    participants.append(the_message.author.name)
 
-    the_client.send_message(the_message.channel, 'Poker started by {}. If you would like to join, type !poker within 15 seconds.'.format(the_message.author.mention()))
-
-    while datetime.datetime.now() < end_time:
-        @the_client.event
-        def on_another_message(another_message):
-            if another_message.content.startswith('!poker') and another_message.author.name not in participants:
-                participants.append(another_message.author.name)
-
+def execute_poker(the_client, the_message):
+    global participants, in_progress
     rolls = poker.poker(participants)
 
-    return rolls
+    the_client.send_message(the_message.channel, rolls)
 
+    in_progress = 0
+    participants = []
+
+    return rolls
 
 @client.event
 def on_message(message):
@@ -78,8 +76,14 @@ def on_message(message):
         client.send_message(message.channel, 'You are fail, {}.'.format(message.author.mention()))
 
     elif message.content.startswith('!poker'):
-        the_rolls = start_poker(client, message)
-        client.send_message(message.channel, the_rolls)
+        global in_progress, participants
+        if in_progress == 0:
+            client.send_message(message.channel, 'Poker started by %s. If you would like to join, type !poker within 15 seconds.' % (message.author.mention(),))
+            in_progress = 1
+            threading.Timer(15.0, execute_poker, args=[client, message]).start()
+            participants.append(message.author.name)
+        elif in_progress == 1 and message.author.name not in participants:
+            participants.append(message.author.name)
 
     elif message.content.startswith('!twitter'):
         try:
