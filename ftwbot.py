@@ -55,7 +55,7 @@ def execute_poker(the_client, the_message):
     announcement = ''
 
     for player in rolls:
-        announcement += player + ': ' + str.join(' ',rolls[player]) + '\n'
+        announcement += player + ': ' + str.join('     ',rolls[player]) + '\n'
 
 #    the_client.send_message(the_message.channel, 'Join us in #poker to see the results.')
     the_client.send_message(the_message.channel, announcement)
