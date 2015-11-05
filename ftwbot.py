@@ -10,6 +10,8 @@ import copy
 import threading
 
 
+card_sort = {'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13}
+
 participants = []
 in_progress = 0
 
@@ -55,7 +57,7 @@ def execute_poker(the_client, the_message):
     announcement = ''
 
     for player in rolls:
-        announcement += player + ': ' + str.join('     ',rolls[player]) + '\n'
+        announcement += player + ':     ' + str.join('     ',sorted(rolls[player], key=lambda x: card_sort[x[0]])) + '\n'
 
 #    the_client.send_message(the_message.channel, 'Join us in #poker to see the results.')
     the_client.send_message(the_message.channel, announcement)
@@ -89,7 +91,7 @@ def on_message(message):
             in_progress = 1
             threading.Timer(15.0, execute_poker, args=[client, message]).start()
             participants.append(message.author.name)
-        elif in_progress == 1 and message.author.name not in participants:
+        elif in_progress == 1 and message.author.name not in participants and len(participants) < 11:
             participants.append(message.author.name)
 
     elif message.content.startswith('!twitter'):
