@@ -84,6 +84,9 @@ def on_message(message):
     elif message.content.startswith('!fail'):
         client.send_message(message.channel, 'You are fail, {}.'.format(message.author.mention()))
 
+    elif message.content.startswith('!ping'):
+        client.send_message(message.channel, 'Pong back atcha, %s.' % (message.author.mention(),))
+
     elif message.content.startswith('!poker'):
         global in_progress, participants
         if in_progress == 0:
