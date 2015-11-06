@@ -10,6 +10,7 @@ import copy
 import threading
 import random
 
+__version__ = '0.2'
 
 card_sort = {'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13}
 
@@ -63,7 +64,7 @@ def execute_poker(the_client, the_message):
     announcement = ''
 
     for player in rolls:
-        announcement += player + ':     ' + str.join('     ',sorted(rolls[player], key=lambda x: card_sort[x[0]])) + '\n'
+        announcement += player + ':     ' + str.join('     ',rolls[player]) + '\n'#sorted(rolls[player], key=lambda x: card_sort[x[0]])) + '\n'
 
 #    the_client.send_message(the_message.channel, 'Join us in #poker to see the results.')
     the_client.send_message(the_message.channel, announcement)
@@ -122,14 +123,16 @@ def on_message(message):
     elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
         if 'help' in message.content:
             client.send_message(message.author, 
-"""Hi there and welcome to forthewynnbot. It was constructed by Emann.
+"""Hi there and welcome to forthewynnbot v0.2. It was constructed by Emann.
 The following commands are available for use:
 
     !fail: tells you how awesome you are
     !hello: greets you
     !joke: tells a very funny joke
     !logs: posts the latest Warcraft Logs in #logs-raid if you are an Officer
-    !poker: initiates a poker game (not implemented yet)
+    !ping: pings the bot
+    !poker: initiates a poker game
+    !twilight: something special :)
     !twitter: retrieves the latest FTWAegwynn tweet from Twitter
  
 Commands you can direct at me:
