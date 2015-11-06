@@ -8,6 +8,7 @@ import datetime
 import poker
 import copy
 import threading
+import random
 
 
 card_sort = {'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13}
@@ -20,6 +21,11 @@ log_channel_id = '91029061601615872'
 poker_channel_id = '111655731958161408'
 
 last_joke_time = datetime.datetime.now()
+
+twilight = []
+the_file = open('twilight.txt','r')
+for line in the_file:
+    twilight.append(line.rstrip('\n'))
 
 
 def fetch_latest_tweet(the_client, the_message):
@@ -79,10 +85,10 @@ def on_message(message):
             last_joke_time = datetime.datetime.now()
 
     elif message.content.startswith('!hello'):
-        client.send_message(message.channel, 'Hello to you, {}.'.format(message.author.mention()))
+        client.send_message(message.channel, 'Hello to you, %s.' % (message.author.mention(),))
 
     elif message.content.startswith('!fail'):
-        client.send_message(message.channel, 'You are fail, {}.'.format(message.author.mention()))
+        client.send_message(message.channel, 'You have failed, %s.' % (message.author.mention(),))
 
     elif message.content.startswith('!ping'):
         client.send_message(message.channel, 'Pong back atcha, %s.' % (message.author.mention(),))
@@ -96,6 +102,10 @@ def on_message(message):
             participants.append(message.author.name)
         elif in_progress == 1 and message.author.name not in participants and len(participants) < 11:
             participants.append(message.author.name)
+
+    elif message.content.startswith('!twilight'):
+#        client.send_message(message.channel, 'Team Edward all the way, %s.' % (message.author.mention(),))
+        client.send_message(message.channel, twilight[random.randint(0,len(twilight))])
 
     elif message.content.startswith('!twitter'):
         try:
