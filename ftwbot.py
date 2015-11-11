@@ -105,8 +105,13 @@ def on_message(message):
             participants.append(message.author.name)
 
     elif message.content.startswith('!twilight'):
-#        client.send_message(message.channel, 'Team Edward all the way, %s.' % (message.author.mention(),))
         client.send_message(message.channel, twilight[random.randint(0,len(twilight))])
+
+    elif message.content.startswith('!teamjacob'):
+        client.send_message(message.channel, 'Team Edward all the way, %s.' % (message.author.mention(),))
+
+    elif message.content.startswith('!yell'):
+        client.send_message(message.channel, 'Please keep your voice down, %s.' % (message.author.mention(),))
 
     elif message.content.startswith('!twitter'):
         try:
