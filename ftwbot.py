@@ -178,12 +178,14 @@ def on_message(message):
             client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
 
     elif message.content.startswith('!logs') and message.author.roles[0].name == 'Officer':
+        client.delete_message(message)
         try:
             fetch_latest_logs(client, message)
         except:
             client.send.message(message.channel, 'Sorry, I am unable to get logs right now.')
 
     elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
+        client.delete_message(message)
         if 'help' in message.content:
             client.send_message(message.author, 
 """Hi there and welcome to forthewynnbot v0.2. It was constructed by Emann.
