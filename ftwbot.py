@@ -129,7 +129,7 @@ Raiding progression in Hellfire Citadel.
 def on_message(message):
     if message.content.startswith('!joke'):
         global last_joke_time
-        if last_joke_time - datetime.datetime.now() > datetime.timedelta(minutes=1):
+        if datetime.datetime.now() - last_joke_time > datetime.timedelta(minutes=1):
             client.send_message(message.channel, 'What side of a turkey has the most feathers?')
             time.sleep(0.5)
             client.send_message(message.channel, 'The outside!!! LMAO')
