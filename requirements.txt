@@ -1,3 +1,4 @@
 discord.py
 python-twitter
 lxml
+tabulate

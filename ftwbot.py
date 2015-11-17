@@ -10,6 +10,7 @@ import copy
 import threading
 import random
 import json
+import tabulate
 
 __version__ = '0.2'
 
@@ -90,6 +91,40 @@ def fetch_realm_status(the_client, the_message, realm):
 
     return
 
+
+def fetch_raider_information(the_client, the_message, character, realm):
+    the_client.delete_message(the_message)
+    status_msg = 'Retrieving information on %s-%s. Please give me 5 seconds.' % (character,realm)
+    the_client.send_message(the_message.author, status_msg)
+    page = requests.get('https://us.api.battle.net/wow/character/%s/%s?fields=items&locale=en_US&apikey=%s' % (realm,character,os.environ['battlenet_key']))
+    data = json.loads(page.text)
+    ilevel = data['items']['averageItemLevel']
+    ileveleq = data['items']['averageItemLevelEquipped']
+
+    page = requests.get('https://us.api.battle.net/wow/character/%s/%s?fields=progression&locale=en_US&apikey=%s' % (realm,character,os.environ['battlenet_key']))
+    data = json.loads(page.text)
+    clears = {}
+    boss_clears = []
+    for raid in data['progression']['raids']:
+        if raid['name'] == "Hellfire Citadel":
+            clears['normal'] = raid['normal']
+            clears['heroic'] = raid['heroic']
+            clears['mythic'] = raid['mythic']
+            for boss in raid['bosses']:
+                boss_clears.append([boss['name'],boss['normalKills'],boss['heroicKills'],boss['mythicKills']])
+
+    message = """Raid information for %s-%s.
+---------------------------
+Average item level: %s
+Average equipped item level: %s
+
+Raiding progression in Hellfire Citadel.
+%s""" % (character, realm, ilevel, ileveleq, tabulate.tabulate(boss_clears, headers=['Boss','Normal Kills','Heroic Kills','Mythic Kills']))
+
+    the_client.send_message(the_message.author, message)
+
+    return
+
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
@@ -102,6 +137,11 @@ def on_message(message):
 
     elif message.content.startswith('!realm'):
         fetch_realm_status(client, message, message.content[7:])
+
+    elif message.content.startswith('!player'):
+        player_string = message.content[8:]
+        player, realm = player_string.split('-')
+        fetch_raider_information(client, message, player, realm)
 
     elif message.content.startswith('!hello'):
         client.send_message(message.channel, 'Hello to you, %s.' % (message.author.mention(),))
