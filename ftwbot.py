@@ -144,7 +144,10 @@ def on_message(message):
         fetch_raider_information(client, message, player, realm)
 
     elif message.content.startswith('!hello'):
-        client.send_message(message.channel, 'Hello to you, %s.' % (message.author.mention(),))
+        client.send_message(message.channel, """Hello, %s, it's me.
+I was wondering if after all these years you'd like to meet, to go over everything.
+They say that time's supposed to heal ya, but I ain't done much healing.
+Hello, can you hear me?""" % (message.author.mention(),))
 
     elif message.content.startswith('!fail'):
         client.send_message(message.channel, 'You have failed, %s.' % (message.author.mention(),))
