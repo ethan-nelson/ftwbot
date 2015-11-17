@@ -9,6 +9,7 @@ import poker
 import copy
 import threading
 import random
+import json
 
 __version__ = '0.2'
 
@@ -75,6 +76,20 @@ def execute_poker(the_client, the_message):
     return rolls
 
 
+def fetch_realm_status(the_client, the_message, realm):
+    page = requests.get('https://us.api.battle.net/wow/realm/status?locale=en_US&realms=%s&apikey=%s' % (realm,os.environ['battlenet_key']))
+    data = json.loads(page.text)
+    status = data['realms'][0]['status']
+
+    if status is True:
+        status_msg = '%s is up!' % realm
+        the_client.send_message(the_message.channel, status_msg)
+    else:
+        status_msg = '%s is not up. :crying_cat_face:' % realm
+        the_client.send_message(the_message.channel, status_msg)
+
+    return
+
 @client.event
 def on_message(message):
     if message.content.startswith('!joke'):
@@ -84,6 +99,9 @@ def on_message(message):
             time.sleep(0.5)
             client.send_message(message.channel, 'The outside!!! LMAO')
             last_joke_time = datetime.datetime.now()
+
+    elif message.content.startswith('!realm'):
+        fetch_realm_status(client, message, message.content[7:])
 
     elif message.content.startswith('!hello'):
         client.send_message(message.channel, 'Hello to you, %s.' % (message.author.mention(),))
