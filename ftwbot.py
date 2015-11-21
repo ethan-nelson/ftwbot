@@ -127,6 +127,7 @@ Raiding progression in Hellfire Citadel.
 
 @client.event
 def on_message(message):
+    time.sleep(0.1)
     if message.content.startswith('!joke'):
         global last_joke_time
         if datetime.datetime.now() - last_joke_time > datetime.timedelta(minutes=1):
