@@ -208,6 +208,8 @@ Commands you can direct at me:
 
     @forthewynnbot help: displays this message
     @forthewynnbot stop: turns me off for 5 minutes
+
+For more information, visit http://github.com/ethan-nelson/ftwbot
 """)
         elif 'stop' in message.content:
             client.send_message(message.channel, 'Shutting down for 5 minutes.')
