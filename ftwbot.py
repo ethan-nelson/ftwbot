@@ -11,8 +11,9 @@ import threading
 import random
 import json
 import tabulate
+import asyncio
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 card_sort = {'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13}
 
@@ -30,36 +31,44 @@ the_file = open('twilight.txt','r')
 for line in the_file:
     twilight.append(line.rstrip('\n'))
 
+drake = []
+try:
+    the_file = open('drake.txt','r')
+    for line in the_file:
+        drake.append(line.rstrip('\n'))
+except:
+    print('No lyrics file, drake.txt, detected.')
+    drake = ['Sorry, no lyrics file found.']
 
-def fetch_latest_tweet(the_client, the_message):
+
+async def fetch_latest_tweet(the_client, the_message):
     api = twitter.Api(consumer_key=os.environ['twitter_consumer_key'],
                       consumer_secret=os.environ['twitter_consumer_secret'],
                       access_token_key=os.environ['twitter_access_token_key'],
                       access_token_secret=os.environ['twitter_access_token_secret'])
     tweet = api.GetUserTimeline(screen_name='ftwaegwynn',count=1)[0]
-    the_client.send_message(the_message.channel,
+    await the_client.send_message(the_message.channel,\
 """The most recent FTWAegwynn tweet is: %s
 
 Read it at http://twitter.com/ftwaegwynn/status/%s.""" % (tweet.text, tweet.id))
 
 
 client = discord.Client()
-client.login(os.environ['discord_user'],os.environ['discord_password'])
 
 
-def fetch_latest_logs(the_client, the_message):
+async def fetch_latest_logs(the_client, the_message):
     page = requests.get('http://www.warcraftlogs.com/guilds/recent_reports/79198/')
     tree = html.fromstring(page.text)
     wol = tree.xpath('/html/body/div/table/tbody/tr[1]/td[1]/a')[0]
 
-    the_client.send_message(log_channel_id,
+    await the_client.send_message(log_channel_id,
 """Here are the WCL for tonight's %s
 %s""" % (wol.text, wol.attrib['href']))
 
-    the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
+    await the_client.send_message(the_message.author, 'Logs are posted in #logs-raid.')
 
 
-def execute_poker(the_client, the_message):
+async def execute_poker(the_client, the_message):
     global participants, in_progress
     rolls = poker.poker(participants)
 
@@ -69,7 +78,7 @@ def execute_poker(the_client, the_message):
         announcement += player + ':     ' + str.join('     ',rolls[player]) + '\n'#sorted(rolls[player], key=lambda x: card_sort[x[0]])) + '\n'
 
 #    the_client.send_message(the_message.channel, 'Join us in #poker to see the results.')
-    the_client.send_message(the_message.channel, announcement)
+    await the_client.send_message(the_message.channel, announcement)
 
     in_progress = 0
     participants = []
@@ -77,25 +86,25 @@ def execute_poker(the_client, the_message):
     return rolls
 
 
-def fetch_realm_status(the_client, the_message, realm):
+async def fetch_realm_status(the_client, the_message, realm):
     page = requests.get('https://us.api.battle.net/wow/realm/status?locale=en_US&realms=%s&apikey=%s' % (realm,os.environ['battlenet_key']))
     data = json.loads(page.text)
     status = data['realms'][0]['status']
 
     if status is True:
         status_msg = '%s is up!' % realm
-        the_client.send_message(the_message.channel, status_msg)
+        await the_client.send_message(the_message.channel, status_msg)
     else:
         status_msg = '%s is not up. :crying_cat_face:' % realm
-        the_client.send_message(the_message.channel, status_msg)
+        await the_client.send_message(the_message.channel, status_msg)
 
     return
 
 
-def fetch_raider_information(the_client, the_message, character, realm):
+async def fetch_raider_information(the_client, the_message, character, realm):
     the_client.delete_message(the_message)
     status_msg = 'Retrieving information on %s-%s. Please give me 5 seconds.' % (character,realm)
-    the_client.send_message(the_message.author, status_msg)
+    await the_client.send_message(the_message.author, status_msg)
     page = requests.get('https://us.api.battle.net/wow/character/%s/%s?fields=items&locale=en_US&apikey=%s' % (realm,character,os.environ['battlenet_key']))
     data = json.loads(page.text)
     ilevel = data['items']['averageItemLevel']
@@ -121,19 +130,21 @@ Average equipped item level: %s
 Raiding progression in Hellfire Citadel.
 %s""" % (character, realm, ilevel, ileveleq, tabulate.tabulate(boss_clears, headers=['Boss','Normal Kills','Heroic Kills','Mythic Kills']))
 
-    the_client.send_message(the_message.author, message)
+    await the_client.send_message(the_message.author, message)
 
     return
 
 @client.event
-def on_message(message):
+async def on_message(message):
     time.sleep(0.1)
     if message.content.startswith('!joke'):
         global last_joke_time
         if datetime.datetime.now() - last_joke_time > datetime.timedelta(minutes=1):
-            client.send_message(message.channel, 'What side of a turkey has the most feathers?')
+            #await client.send_message(message.channel, 'What side of a turkey has the most feathers?')
+            await client.send_message(message.channel, 'Why did the Grinch go to the liquor store?')
             time.sleep(0.5)
-            client.send_message(message.channel, 'The outside!!! LMAO')
+            #await client.send_message(message.channel, 'The outside!!! LMAO')
+            await client.send_message(message.channel, 'To get his holiday spirit!')
             last_joke_time = datetime.datetime.now()
 
     elif message.content.startswith('!realm'):
@@ -145,41 +156,44 @@ def on_message(message):
         fetch_raider_information(client, message, player, realm)
 
     elif message.content.startswith('!hello'):
-        client.send_message(message.channel, """Hello, %s, it's me.
+         await client.send_message(message.channel, """Hello, %s, it's me.
 I was wondering if after all these years you'd like to meet, to go over everything.
 They say that time's supposed to heal ya, but I ain't done much healing.
-Hello, can you hear me?""" % (message.author.mention(),))
+Hello, can you hear me?""" % (message.author.mention,))
 
     elif message.content.startswith('!fail'):
-        client.send_message(message.channel, 'You have failed, %s.' % (message.author.mention(),))
+        await client.send_message(message.channel, 'You have failed, %s.' % (message.author.mention,))
 
     elif message.content.startswith('!ping'):
-        client.send_message(message.channel, 'Pong back atcha, %s.' % (message.author.mention(),))
+        await client.send_message(message.channel, 'Pong back atcha, %s.' % (message.author.mention,))
 
     elif message.content.startswith('!poker'):
         global in_progress, participants
         if in_progress == 0:
-            client.send_message(message.channel, 'Poker started by %s. If you would like to join, type !poker within 15 seconds.' % (message.author.mention(),))
+            await client.send_message(message.channel, 'Poker started by %s. If you would like to join, type !poker within 15 seconds.' % (message.author.mention,))
             in_progress = 1
             threading.Timer(15.0, execute_poker, args=[client, message]).start()
             participants.append(message.author.name)
         elif in_progress == 1 and message.author.name not in participants and len(participants) < 11:
             participants.append(message.author.name)
 
+    elif message.content.startswith('!drake'):
+        await client.send_message(message.channel, drake[random.randint(0,len(drake)-1)])
+
     elif message.content.startswith('!twilight'):
-        client.send_message(message.channel, twilight[random.randint(0,len(twilight))])
+        await client.send_message(message.channel, twilight[random.randint(0,len(twilight)-1)])
 
     elif message.content.startswith('!teamjacob'):
-        client.send_message(message.channel, 'Team Edward all the way, %s.' % (message.author.mention(),))
+        await client.send_message(message.channel, 'Team Edward all the way, %s.' % (message.author.mention,))
 
     elif message.content.startswith('!yell'):
-        client.send_message(message.channel, 'Please keep your voice down, %s.' % (message.author.mention(),))
+        await client.send_message(message.channel, 'Please keep your voice down, %s.' % (message.author.mention,))
 
     elif message.content.startswith('!twitter'):
         try:
             fetch_latest_tweet(client, message)
         except:
-            client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
+            await client.send_message(message.channel, 'Sorry, I am not able to get a tweet right now.')
 
     elif message.content.startswith('!logs') and message.author.roles[0].name == 'Officer':
         client.delete_message(message)
@@ -191,17 +205,18 @@ Hello, can you hear me?""" % (message.author.mention(),))
     elif message.content.startswith(my_user_id) or message.content.startswith('@forthewynnbot'):
         client.delete_message(message)
         if 'help' in message.content:
-            client.send_message(message.author, 
+            await client.send_message(message.author, 
 """Hi there and welcome to forthewynnbot v0.2. It was constructed by Emann.
 The following commands are available for use:
 
+    !drake: something special :)
     !fail: tells you how awesome you are
     !hello: greets you
     !joke: tells a very funny joke
     !logs: posts the latest Warcraft Logs in #logs-raid if you are an Officer
     !ping: pings the bot
     !poker: initiates a poker game
-    !twilight: something special :)
+    !twilight: something else special :)
     !twitter: retrieves the latest FTWAegwynn tweet from Twitter
  
 Commands you can direct at me:
@@ -212,10 +227,9 @@ Commands you can direct at me:
 For more information, visit http://github.com/ethan-nelson/ftwbot
 """)
         elif 'stop' in message.content:
-            client.send_message(message.channel, 'Shutting down for 5 minutes.')
+            await client.send_message(message.channel, 'Shutting down for 5 minutes.')
             time.sleep(300.0)
         else:
-            client.send_message(message.channel, 'Sorry, I do not understand that command.')
+            await client.send_message(message.channel, 'Sorry, I do not understand that command.')
 
-
-client.run()
+client.run(os.environ['discord_user'],os.environ['discord_password'])

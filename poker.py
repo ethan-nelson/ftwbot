@@ -26,7 +26,7 @@ def poker(players):
 
     def convert(rolls):
         cards = {}
-        print rolls
+        print(rolls)
         for player in rolls:
             cards[player] = []
 
